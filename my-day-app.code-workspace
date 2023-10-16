@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../my-day-app-api"
+		},
+		{
+			"path": "../my-day-app-ui"
+		}
+	],
+	"settings": {}
+}
