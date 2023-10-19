@@ -1,25 +1,23 @@
-#get the latest alpine image from node registry
-FROM node:alpine AS build-stage
+ #Multi-stage
+# 1) Node image for building frontend assets
+# 2) nginx stage to serve frontend assets
 
-#set the working directory
+# Name the node stage "builder"
+FROM node:16 AS builder
+# Set working directory
 WORKDIR /app
-
-#copy the package and package lock files
-#from local to container work directory /app
-COPY package*.json /app/
-
-#Run command npm install to install packages
-RUN npm install
-
-#copy all the folder contents from local to container
+# Copy all files from current directory to working dir in image
 COPY . .
+# install node modules and build assets
+RUN yarn install && yarn build
 
-#create a react production build
-RUN npm run build
-
-#get the latest alpine image from nginx registry
+# nginx state for serving content
 FROM nginx:alpine
-
-#we copy the output from first stage that is our react build
-#into nginx html directory where it will serve our index file
-COPY --from=build-stage /app/build/ /usr/share/nginx/html
+# Set working directory to nginx asset directory
+WORKDIR /usr/share/nginx/html
+# Remove default nginx static assets
+RUN rm -rf ./*
+# Copy static assets from builder stage
+COPY --from=builder /app/build .
+# Containers run nginx with global directives and daemon off
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
